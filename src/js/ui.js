@@ -1,4 +1,4 @@
-import { ACTIONS, APP_VERSION, MODES, STATS } from './config.js';
+import { ACTIONS, APP_VERSION, MODES, RUN_END_TYPE, STATS } from './config.js';
 import { formatTime } from './logic.js';
 
 const screens = {
@@ -22,6 +22,7 @@ const nodes = {
   menuBtn: document.getElementById('menu-btn'),
   rewardBtn: document.getElementById('reward-btn'),
   modeTitle: document.getElementById('mode-title'),
+  timeLabel: document.getElementById('time-label'),
   timeLeft: document.getElementById('time-left'),
   score: document.getElementById('score'),
   stats: document.getElementById('stats'),
@@ -107,7 +108,7 @@ export function renderStart(save, selectedMode, onModeSelect) {
     if (!unlocked) btn.classList.add('mode--locked');
 
     btn.innerHTML = `<strong>${mode.title}</strong><small>${
-      unlocked ? 'Готово к запуску' : `Откроется от ${mode.unlockScore} очков`
+      unlocked ? mode.objective : `Откроется от ${mode.unlockScore} очков`
     }</small>`;
     btn.disabled = !unlocked;
     btn.addEventListener('click', () => onModeSelect(mode.id));
@@ -244,6 +245,7 @@ function renderStatEffects(state) {
 export function renderGame(state) {
   const mode = MODES[state.modeId];
   nodes.modeTitle.textContent = mode.title;
+  nodes.timeLabel.textContent = mode.timeLabel;
   nodes.timeLeft.textContent = formatTime(state.timeLeftSec);
   nodes.score.textContent = String(Math.round(state.stats.score));
 
@@ -294,17 +296,29 @@ export function renderActions(onAction) {
 }
 
 export function renderResult(state, save) {
-  nodes.resultTitle.textContent = state.win ? 'Звонок! Ты выжил урок 🎉' : 'Поражение 😵';
-  nodes.resultText.textContent = state.endReason;
-  nodes.resultRecap.textContent = state.win
-    ? 'Чёткий забег: держал баланс и дожил до конца.'
-    : 'Нажми «Ещё раз» и попробуй пережить следующий урок.';
+  const mode = MODES[state.modeId];
+  const isEndlessRun = state.endType === RUN_END_TYPE.ENDLESS_RECORD;
+
+  if (state.win) {
+    nodes.resultTitle.textContent = mode.resultWinTitle;
+    nodes.resultText.textContent = mode.resultWinText;
+    nodes.resultRecap.textContent = `Цель режима выполнена: ${mode.objective.toLowerCase()}`;
+  } else if (isEndlessRun) {
+    nodes.resultTitle.textContent = mode.resultWinTitle;
+    nodes.resultText.textContent = `${state.endReason} Это финал рекордного забега.`;
+    nodes.resultRecap.textContent = 'Бесконечный режим завершается только поражением — сравни результат с рекордом и пробуй снова.';
+  } else {
+    nodes.resultTitle.textContent = 'Поражение 😵';
+    nodes.resultText.textContent = state.endReason;
+    nodes.resultRecap.textContent = 'Нажми «Ещё раз» и попробуй пережить следующий урок.';
+  }
+
   nodes.resultScore.textContent = String(Math.round(state.stats.score));
   nodes.resultKnowledge.textContent = String(Math.round(state.stats.knowledge));
   nodes.unlockedModes.textContent = String(save.unlockedModes.length);
-  nodes.resultMood.textContent = state.win ? '🥳' : '😵';
-  nodes.resultCard.classList.toggle('result--win', state.win);
-  nodes.resultCard.classList.toggle('result--lose', !state.win);
+  nodes.resultMood.textContent = state.win ? '🥳' : isEndlessRun ? '🏁' : '😵';
+  nodes.resultCard.classList.toggle('result--win', state.win || isEndlessRun);
+  nodes.resultCard.classList.toggle('result--lose', !state.win && !isEndlessRun);
   nodes.rewardBtn.disabled = state.win || state.continueUsed;
 }
 

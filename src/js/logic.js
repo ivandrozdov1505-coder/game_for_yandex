@@ -1,4 +1,4 @@
-import { ACTIONS, LOSS_REASON, MODES } from './config.js';
+import { ACTIONS, LOSS_REASON, MODES, RUN_END_TYPE } from './config.js';
 import { EVENTS } from './events.js';
 
 function clamp(v, min, max) {
@@ -19,7 +19,8 @@ function pushLog(state, text) {
 
 function calcDifficulty(elapsedSec, mode) {
   const phase = Math.min(1.6, 1 + elapsedSec / Math.max(90, (mode.durationSec ?? 180) * 0.9));
-  return phase * mode.difficultyScale;
+  const endlessGrowth = mode.durationSec ? 0 : (elapsedSec / 60) * mode.endlessRampPerMinute;
+  return (phase + endlessGrowth) * mode.difficultyScale;
 }
 
 function sampleEvent(state, mode) {
@@ -42,6 +43,9 @@ function sampleEvent(state, mode) {
     if (mode.id === 'test' && ['mini_test', 'called_to_answer'].includes(ev.id)) {
       weight *= 1.5;
     }
+    if (mode.eventWeights?.[ev.id]) {
+      weight *= mode.eventWeights[ev.id];
+    }
     return { event: ev, weight };
   });
 
@@ -59,7 +63,9 @@ function actionImpact(state, actionId, event, mode) {
   const s = state.stats;
   const impact = { sleepiness: 0, suspicion: 0, stress: 0, knowledge: 0, score: 0, fail: false, msg: '' };
 
-  const goodAnswerChance = clamp((s.knowledge * 0.75 + (100 - s.stress) * 0.25) / 100, 0.05, 0.96);
+  const knowledgePower = 0.75 * mode.knowledgeEffectiveness;
+  const stressPower = clamp(1.1 - (mode.knowledgeEffectiveness - 1) * 0.35, 0.4, 1.1);
+  const goodAnswerChance = clamp((s.knowledge * knowledgePower + (100 - s.stress) * 0.25 * stressPower) / 100, 0.05, 0.97);
   const excuseChance = clamp((100 - s.suspicion) / 120, 0.08, 0.9);
 
   switch (actionId) {
@@ -78,14 +84,14 @@ function actionImpact(state, actionId, event, mode) {
       break;
     case 'phone':
       impact.sleepiness -= 2;
-      impact.suspicion += 7 * d;
+      impact.suspicion += 7 * d * mode.suspicionPenaltyScale;
       impact.knowledge -= 2;
       impact.score += 3;
       impact.msg = 'Лента мемов мощная, но учитель не слепой.';
       break;
     case 'cheat':
       impact.knowledge += 3;
-      impact.suspicion += 5 * d;
+      impact.suspicion += 5 * d * mode.suspicionPenaltyScale;
       impact.stress += 2;
       impact.score += 6;
       impact.msg = 'Списывание даёт буст, но риск растёт.';
@@ -100,17 +106,17 @@ function actionImpact(state, actionId, event, mode) {
         impact.msg = 'Ответ уверенный. Класс в шоке.';
       } else {
         impact.score -= 5;
-        impact.stress += 7;
-        impact.suspicion += 4;
+        impact.stress += 7 * mode.stressPenaltyScale;
+        impact.suspicion += 4 * mode.suspicionPenaltyScale;
         impact.msg = 'Ответ вышел так себе.';
-        if (event?.important) impact.fail = true;
+        if (event?.important && mode.importantFailEndsRun) impact.fail = true;
       }
       break;
     }
     case 'ignore':
       impact.sleepiness += 3;
-      impact.stress += 2;
-      impact.suspicion += 2;
+      impact.stress += 2 * mode.stressPenaltyScale;
+      impact.suspicion += 2 * mode.suspicionPenaltyScale;
       impact.score -= 2;
       impact.msg = 'Игнор это временно удобно, но копит проблемы.';
       break;
@@ -122,11 +128,11 @@ function actionImpact(state, actionId, event, mode) {
         impact.score += 2;
         impact.msg = 'Отмазка звучала убедительно.';
       } else {
-        impact.suspicion += 9;
-        impact.stress += 4;
+        impact.suspicion += 9 * mode.suspicionPenaltyScale;
+        impact.stress += 4 * mode.stressPenaltyScale;
         impact.score -= 4;
         impact.msg = 'Отмазка вышла сомнительной.';
-        if (event?.important) impact.fail = true;
+        if (event?.important && mode.importantFailEndsRun) impact.fail = true;
       }
       break;
     }
@@ -134,7 +140,7 @@ function actionImpact(state, actionId, event, mode) {
       impact.stress -= 8;
       impact.sleepiness -= 4;
       impact.knowledge -= 3;
-      impact.suspicion += 2;
+      impact.suspicion += 2 * mode.suspicionPenaltyScale;
       impact.score += 1;
       impact.msg = 'Перерыв помог прийти в себя.';
       break;
@@ -145,10 +151,10 @@ function actionImpact(state, actionId, event, mode) {
   if (event) {
     const matched = event.checks.includes(actionId);
     if (!matched) {
-      impact.stress += 5;
-      impact.suspicion += 4;
+      impact.stress += 5 * mode.stressPenaltyScale;
+      impact.suspicion += 4 * mode.suspicionPenaltyScale;
       impact.score -= 3;
-      if (event.important) impact.fail = true;
+      if (event.important && mode.importantFailEndsRun) impact.fail = true;
     } else {
       impact.score += event.danger === 'высокая' ? 6 : 3;
       if (event.danger === 'высокая') impact.stress -= 2;
@@ -164,7 +170,7 @@ function actionImpact(state, actionId, event, mode) {
     if (event.id === 'mini_test' && actionId === 'cheat') {
       impact.score += 10;
       if (Math.random() < 0.33 * d) {
-        impact.suspicion += 16;
+        impact.suspicion += 16 * mode.suspicionPenaltyScale;
         impact.fail = true;
       }
     }
@@ -200,7 +206,10 @@ export function stepTime(state) {
     const scaled = base * state.difficulty * dir;
     state.stats[key] = clamp(state.stats[key] + scaled, 0, 100);
   }
-  state.stats.score = Math.max(0, Math.round(state.stats.score + (0.8 + state.stats.knowledge / 80)));
+  state.stats.score = Math.max(
+    0,
+    Math.round(state.stats.score + (mode.scorePerSecond + state.stats.knowledge / mode.knowledgeScoreFactor))
+  );
 
   if (mode.durationSec) {
     state.timeLeftSec = Math.max(0, mode.durationSec - state.elapsedSec);
@@ -219,6 +228,7 @@ export function stepTime(state) {
   if (lose) {
     state.running = false;
     state.ended = true;
+    state.endType = mode.durationSec ? RUN_END_TYPE.LOSE : RUN_END_TYPE.ENDLESS_RECORD;
     state.endReason = lose;
     state.win = false;
     return state;
@@ -228,7 +238,10 @@ export function stepTime(state) {
     state.running = false;
     state.ended = true;
     state.win = true;
-    state.endReason = 'Звонок! Ты пережил урок.';
+    state.endType = RUN_END_TYPE.TIME_WIN;
+    state.endReason = mode.resultWinText;
+    state.stats.score = Math.round(state.stats.score + mode.survivalBonus);
+    pushLog(state, `Финишный бонус: +${mode.survivalBonus} очков за выживание.`);
   }
 
   return state;
@@ -244,6 +257,7 @@ export function performAction(state, actionId) {
   if (delta.fail) {
     state.running = false;
     state.ended = true;
+    state.endType = mode.durationSec ? RUN_END_TYPE.LOSE : RUN_END_TYPE.ENDLESS_RECORD;
     state.win = false;
     state.endReason = LOSS_REASON.eventFail;
   }
@@ -256,6 +270,7 @@ export function performAction(state, actionId) {
   if (lose) {
     state.running = false;
     state.ended = true;
+    state.endType = mode.durationSec ? RUN_END_TYPE.LOSE : RUN_END_TYPE.ENDLESS_RECORD;
     state.endReason = lose;
     state.win = false;
   }
@@ -273,6 +288,7 @@ export function applySecondChance(state) {
   state.running = true;
   state.ended = false;
   state.win = false;
+  state.endType = null;
   state.endReason = '';
   state.continueUsed = true;
   state.activeEvent = null;
