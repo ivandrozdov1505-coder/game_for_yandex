@@ -10,42 +10,76 @@
   <body>
     <div class="app" id="app">
       <section class="screen screen--active" id="start-screen">
-        <h1>Выживи урок</h1>
-        <p class="subtitle">Мемный симулятор выживания школьника на уроке.</p>
-        <p class="tiny" id="sdk-status">SDK: инициализация...</p>
+        <header class="hero card">
+          <p class="hero__badge">Yandex Games • casual survival</p>
+          <h1>Выживи урок</h1>
+          <p class="subtitle">Не спались учителю, переживи звонок и набери максимум очков.</p>
+          <div class="hero__art" aria-hidden="true">
+            <div class="hero__teacher">👩‍🏫</div>
+            <div class="hero__student">🧑‍🎓</div>
+            <div class="hero__board">Доска: «Контрольная?»</div>
+          </div>
+          <p class="tiny" id="sdk-status">SDK: инициализация...</p>
+        </header>
 
         <div class="card">
-          <h2>Режим</h2>
+          <h2>Режим игры</h2>
           <div class="mode-list" id="mode-list"></div>
         </div>
 
-        <div class="card">
+        <div class="card score-card">
           <h2>Рекорды</h2>
           <p>Лучший счёт: <span id="best-score">0</span></p>
-          <p>Лучший результат на контрольной: <span id="best-test-score">0</span></p>
+          <p>Контрольная: <span id="best-test-score">0</span></p>
           <p>Победы: <span id="total-wins">0</span> / Забеги: <span id="total-runs">0</span></p>
         </div>
 
         <button class="btn btn--primary btn--xl" id="start-game-btn">Начать урок</button>
+        <p class="tiny app-version" id="app-version">v1.2.0</p>
       </section>
 
       <section class="screen" id="game-screen">
         <header class="topbar card">
           <div>
             <h2 id="mode-title">Обычный урок</h2>
-            <p class="tiny">Время до звонка: <span id="time-left">00:00</span></p>
+            <p class="tiny">До звонка: <span id="time-left">00:00</span></p>
           </div>
           <div class="row">
-            <div class="score-box">Очки: <span id="score">0</span></div>
+            <div class="score-box">⭐ Очки: <span id="score">0</span></div>
             <button class="btn" id="pause-btn">Пауза</button>
           </div>
         </header>
 
-        <section class="stats" id="stats"></section>
+        <section class="hud" id="stats"></section>
+
+        <section class="scene card" id="scene" aria-live="polite">
+          <div class="scene__bg"></div>
+          <div class="scene__layer scene__layer--back">
+            <div class="desk"></div>
+            <div class="board" id="board-state">Тихий урок</div>
+            <div class="window"></div>
+          </div>
+          <div class="scene__layer scene__layer--characters">
+            <div class="teacher" id="teacher-state">
+              <div class="teacher__emoji" id="teacher-emoji">👩‍🏫</div>
+              <span class="character-label" id="teacher-label">Нейтрально</span>
+            </div>
+            <div class="student" id="student-state">
+              <div class="student__emoji" id="student-emoji">🧑‍🎓</div>
+              <span class="character-label" id="student-label">Спокойно</span>
+            </div>
+            <div class="classmates" aria-hidden="true">🧑 🧒 🧑</div>
+          </div>
+          <div class="event-bubble" id="event-visual" hidden>
+            <span id="event-icon">⚠️</span>
+            <strong id="event-short">Событие</strong>
+          </div>
+          <div class="effect-layer" id="effect-layer"></div>
+        </section>
 
         <section class="event card" id="event-panel">
-          <h3>Ситуация</h3>
-          <p id="event-title">Пока всё спокойно...</p>
+          <p class="event__kicker" id="event-type">Ситуация в классе</p>
+          <h3 id="event-title">Пока всё спокойно...</h3>
           <p class="tiny" id="event-danger">Опасность: низкая</p>
         </section>
 
@@ -55,21 +89,25 @@
         </section>
 
         <section class="log card">
-          <h3>Лента</h3>
+          <h3>Лента урока</h3>
           <ul id="log-list"></ul>
         </section>
       </section>
 
       <section class="screen" id="result-screen">
-        <h2 id="result-title">Урок окончен</h2>
-        <p id="result-text"></p>
-        <div class="card">
-          <p>Счёт: <span id="result-score">0</span></p>
-          <p>Знания: <span id="result-knowledge">0</span></p>
-          <p>Открытые режимы: <span id="unlocked-modes">1</span></p>
+        <div class="result card" id="result-card">
+          <div class="result__mood" id="result-mood">😵</div>
+          <h2 id="result-title">Урок окончен</h2>
+          <p id="result-text"></p>
+          <p class="tiny" id="result-recap">Сегодня было жарко.</p>
+          <div class="result__stats">
+            <p>Счёт: <span id="result-score">0</span></p>
+            <p>Знания: <span id="result-knowledge">0</span></p>
+            <p>Открытые режимы: <span id="unlocked-modes">1</span></p>
+          </div>
         </div>
         <div class="actions-grid actions-grid--result">
-          <button class="btn btn--primary" id="play-again-btn">Сыграть ещё</button>
+          <button class="btn btn--primary" id="play-again-btn">Ещё раз</button>
           <button class="btn" id="reward-btn">Второй шанс за рекламу</button>
         </div>
       </section>
