@@ -14,9 +14,15 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  font-family: "Inter", "Segoe UI", sans-serif;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   background: radial-gradient(circle at top left, #ffffff 0%, var(--bg) 65%);
   color: var(--ink);
 }
@@ -65,6 +71,7 @@ p {
   padding: 12px 14px;
   cursor: pointer;
   min-height: 48px;
+  font-size: 0.95rem;
 }
 
 .btn:disabled {
@@ -82,11 +89,21 @@ p {
   font-size: 1.05rem;
 }
 
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .mode-list,
 .actions-grid {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.actions-grid--result {
+  grid-template-columns: 1fr;
 }
 
 .mode {
@@ -95,6 +112,7 @@ p {
   padding: 10px;
   background: #f7f8ff;
   cursor: pointer;
+  text-align: left;
 }
 
 .mode--active {
@@ -157,14 +175,10 @@ p {
   background: var(--warn);
 }
 
-.log ul,
 #log-list {
   list-style: none;
   padding: 0;
   margin: 0;
-}
-
-#log-list {
   display: grid;
   gap: 8px;
   max-height: 170px;
@@ -189,8 +203,14 @@ p {
     grid-template-columns: 1fr;
   }
 
-  .topbar {
+  .topbar,
+  .row {
     align-items: flex-start;
     flex-direction: column;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
   }
 }

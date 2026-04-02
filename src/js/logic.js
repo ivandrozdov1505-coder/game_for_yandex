@@ -268,6 +268,21 @@ export function performAction(state, actionId) {
   return state;
 }
 
+
+export function applySecondChance(state) {
+  state.running = true;
+  state.ended = false;
+  state.win = false;
+  state.endReason = '';
+  state.continueUsed = true;
+  state.activeEvent = null;
+  state.stats.sleepiness = Math.min(state.stats.sleepiness, 70);
+  state.stats.stress = Math.min(state.stats.stress, 70);
+  state.stats.suspicion = Math.min(state.stats.suspicion, 70);
+  pushLog(state, 'Бонус за просмотр рекламы: ты собрался и вернулся в игру.');
+  return state;
+}
+
 export function formatTime(totalSec) {
   if (totalSec == null) return '∞';
   const m = String(Math.floor(totalSec / 60)).padStart(2, '0');

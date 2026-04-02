@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Выживи урок</title>
     <link rel="stylesheet" href="src/styles/styles.css" />
+    <script src="https://yandex.ru/games/sdk/v2"></script>
   </head>
   <body>
     <div class="app" id="app">
       <section class="screen screen--active" id="start-screen">
         <h1>Выживи урок</h1>
         <p class="subtitle">Мемный симулятор выживания школьника на уроке.</p>
+        <p class="tiny" id="sdk-status">SDK: инициализация...</p>
 
         <div class="card">
           <h2>Режим</h2>
@@ -21,18 +23,22 @@
           <h2>Рекорды</h2>
           <p>Лучший счёт: <span id="best-score">0</span></p>
           <p>Лучший результат на контрольной: <span id="best-test-score">0</span></p>
+          <p>Победы: <span id="total-wins">0</span> / Забеги: <span id="total-runs">0</span></p>
         </div>
 
         <button class="btn btn--primary btn--xl" id="start-game-btn">Начать урок</button>
       </section>
 
       <section class="screen" id="game-screen">
-        <header class="topbar">
+        <header class="topbar card">
           <div>
             <h2 id="mode-title">Обычный урок</h2>
             <p class="tiny">Время до звонка: <span id="time-left">00:00</span></p>
           </div>
-          <div class="score-box">Очки: <span id="score">0</span></div>
+          <div class="row">
+            <div class="score-box">Очки: <span id="score">0</span></div>
+            <button class="btn" id="pause-btn">Пауза</button>
+          </div>
         </header>
 
         <section class="stats" id="stats"></section>
@@ -62,7 +68,19 @@
           <p>Знания: <span id="result-knowledge">0</span></p>
           <p>Открытые режимы: <span id="unlocked-modes">1</span></p>
         </div>
-        <button class="btn btn--primary" id="play-again-btn">Сыграть ещё</button>
+        <div class="actions-grid actions-grid--result">
+          <button class="btn btn--primary" id="play-again-btn">Сыграть ещё</button>
+          <button class="btn" id="reward-btn">Второй шанс за рекламу</button>
+        </div>
+      </section>
+
+      <section class="screen" id="pause-screen">
+        <h2 id="pause-title">Пауза</h2>
+        <p id="pause-text">Игра остановлена.</p>
+        <div class="actions-grid actions-grid--result">
+          <button class="btn btn--primary" id="resume-btn">Продолжить</button>
+          <button class="btn" id="menu-btn">В меню</button>
+        </div>
       </section>
     </div>
 
