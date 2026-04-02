@@ -24,12 +24,6 @@ export function createInitialState(modeId = 'normal') {
     log: ['Урок начинается. Держись.'],
     nextEventInSec: 5,
     difficulty: 1,
-    unlockedModes: ['normal'],
-    bestScore: 0,
-    bestTestScore: 0,
+    continueUsed: false,
   };
-}
-
-export function cloneState(state) {
-  return JSON.parse(JSON.stringify(state));
 }

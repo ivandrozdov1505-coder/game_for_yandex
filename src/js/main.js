@@ -1,110 +1,265 @@
 import { MODES } from './config.js';
-import { performAction, stepTime } from './logic.js';
+import { GAME_STATES } from './core/game-states.js';
+import { applySecondChance, performAction, stepTime } from './logic.js';
+import { createSoundService } from './sound.js';
 import { createInitialState } from './state.js';
-import { loadSave, saveProgress } from './storage.js';
+import { createLocalStorageService } from './storage.js';
+import { createAdsService } from './sdk/ads.js';
+import { bindPlatformLifecycle } from './sdk/events.js';
+import { syncGameplayApi } from './sdk/gameplay.js';
+import { initSdk } from './sdk/init.js';
+import { getPlayerProfile } from './sdk/player.js';
+import { createStorageBridge } from './sdk/storage-bridge.js';
 import {
   bindStaticHandlers,
   renderActions,
   renderGame,
+  renderPause,
   renderResult,
+  renderSdkStatus,
   renderStart,
   switchScreen,
 } from './ui.js';
 
-let state = createInitialState();
+const storageService = createLocalStorageService();
+const soundService = createSoundService();
+
+let appState = GAME_STATES.BOOT;
+let runState = createInitialState();
 let selectedMode = 'normal';
 let timer = null;
+let unbindLifecycle = () => {};
 
-function mergeSave() {
-  const save = loadSave();
-  state.bestScore = save.bestScore;
-  state.bestTestScore = save.bestTestScore;
-  state.unlockedModes = save.unlockedModes;
+let save = storageService.load();
+let sdk = null;
+let playerProfile = { isAuthorized: false, name: 'Гость', player: null };
+let storageBridge = createStorageBridge({ localStorageService: storageService, ysdk: null, playerProfile });
+let adsService = createAdsService(null);
+
+function setAppState(nextState) {
+  if (appState === nextState) return;
+  appState = nextState;
+  syncGameplayApi(sdk, nextState);
 }
 
-function syncSave() {
-  saveProgress({
-    bestScore: state.bestScore,
-    bestTestScore: state.bestTestScore,
-    unlockedModes: state.unlockedModes,
-  });
+function persistSave() {
+  storageBridge.save(save);
 }
 
 function unlockModes() {
   Object.values(MODES).forEach((mode) => {
-    if (state.stats.score >= mode.unlockScore && !state.unlockedModes.includes(mode.id)) {
-      state.unlockedModes.push(mode.id);
-      state.log.unshift(`Открыт режим: ${mode.title}`);
+    if (runState.stats.score >= mode.unlockScore && !save.unlockedModes.includes(mode.id)) {
+      save.unlockedModes.push(mode.id);
+      runState.log.unshift(`Открыт режим: ${mode.title}`);
     }
   });
 }
 
 function startLoop() {
-  if (timer) clearInterval(timer);
-  const mode = MODES[state.modeId];
+  stopLoop();
+  const mode = MODES[runState.modeId];
   timer = setInterval(() => {
-    stepTime(state);
-    renderGame(state);
-    if (state.ended) {
+    stepTime(runState);
+    renderGame(runState);
+    if (runState.ended) {
       finishRun();
     }
   }, mode.tickMs);
 }
 
-function startRun() {
-  state = createInitialState(selectedMode);
-  mergeSave();
-  state.running = true;
+function stopLoop() {
+  if (!timer) return;
+  clearInterval(timer);
+  timer = null;
+}
+
+function beginRun() {
+  runState = createInitialState(selectedMode);
+  runState.running = true;
+  save.stats.runs += 1;
+  persistSave();
+
   switchScreen('game');
   renderActions(handleAction);
-  renderGame(state);
+  renderGame(runState);
+
+  setAppState(GAME_STATES.PLAYING);
   startLoop();
 }
 
-function finishRun() {
-  if (timer) {
-    clearInterval(timer);
-    timer = null;
-  }
+async function finishRun() {
+  stopLoop();
 
   unlockModes();
-
-  if (state.stats.score > state.bestScore) {
-    state.bestScore = Math.round(state.stats.score);
+  if (runState.win) {
+    save.stats.wins += 1;
+  } else {
+    save.stats.losses += 1;
   }
 
-  if (state.modeId === 'test' && state.stats.score > state.bestTestScore) {
-    state.bestTestScore = Math.round(state.stats.score);
+  if (runState.stats.score > save.bestScore) {
+    save.bestScore = Math.round(runState.stats.score);
   }
 
-  syncSave();
-  renderResult(state);
+  if (runState.modeId === 'test' && runState.stats.score > save.bestTestScore) {
+    save.bestTestScore = Math.round(runState.stats.score);
+  }
+
+  persistSave();
+  renderResult(runState, save);
   switchScreen('result');
+  setAppState(GAME_STATES.RESULT);
+
+  if (sdk) {
+    setAppState(GAME_STATES.AD);
+    soundService.pauseForAd();
+    await adsService.showInterstitial();
+    soundService.resumeAfterAd();
+    setAppState(GAME_STATES.RESULT);
+  }
 }
 
 function handleAction(actionId) {
-  performAction(state, actionId);
-  renderGame(state);
-  if (state.ended) {
+  performAction(runState, actionId);
+  renderGame(runState);
+  if (runState.ended) {
     finishRun();
   }
 }
 
 function renderMenu() {
-  mergeSave();
-  if (!state.unlockedModes.includes(selectedMode)) {
+  if (!save.unlockedModes.includes(selectedMode)) {
     selectedMode = 'normal';
   }
-  renderStart(state, selectedMode, (modeId) => {
+
+  renderStart(save, selectedMode, (modeId) => {
     selectedMode = modeId;
     renderMenu();
   });
+
   switchScreen('start');
+  setAppState(GAME_STATES.MENU);
+}
+
+function pauseRun(reason = 'manual') {
+  if (appState !== GAME_STATES.PLAYING) return;
+  stopLoop();
+  runState.running = false;
+
+  if (reason === 'system') {
+    soundService.pauseForSystem();
+    renderPause(true);
+    switchScreen('pause');
+    setAppState(GAME_STATES.SYSTEM_PAUSE);
+    return;
+  }
+
+  renderPause(false);
+  switchScreen('pause');
+  setAppState(GAME_STATES.PAUSED);
+}
+
+function resumeRun(source = 'manual') {
+  if (source === 'system') {
+    if (appState !== GAME_STATES.SYSTEM_PAUSE) return;
+    soundService.resumeFromSystem();
+    runState.running = true;
+    switchScreen('game');
+    renderGame(runState);
+    setAppState(GAME_STATES.PLAYING);
+    startLoop();
+    return;
+  }
+
+  if (appState !== GAME_STATES.PAUSED) return;
+  runState.running = true;
+  switchScreen('game');
+  renderGame(runState);
+  setAppState(GAME_STATES.PLAYING);
+  startLoop();
+}
+
+async function tryRewardedContinue() {
+  if (runState.win || runState.continueUsed || appState !== GAME_STATES.RESULT) return;
+
+  setAppState(GAME_STATES.AD);
+  soundService.pauseForAd();
+  const adResult = await adsService.showRewarded();
+  soundService.resumeAfterAd();
+
+  if (adResult.rewarded) {
+    applySecondChance(runState);
+    switchScreen('game');
+    renderGame(runState);
+    setAppState(GAME_STATES.PLAYING);
+    startLoop();
+    return;
+  }
+
+  renderResult(runState, save);
+  switchScreen('result');
+  setAppState(GAME_STATES.RESULT);
+}
+
+async function bootstrap() {
+  setAppState(GAME_STATES.LOADING);
+
+  const sdkContext = await initSdk();
+  sdk = sdkContext.ysdk;
+  playerProfile = await getPlayerProfile(sdk);
+
+  storageBridge = createStorageBridge({
+    localStorageService: storageService,
+    ysdk: sdk,
+    playerProfile,
+  });
+
+  save = await storageBridge.load();
+  soundService.applySettings(save.settings);
+
+  adsService = createAdsService(sdk, {
+    onOpen: () => {
+      if (appState === GAME_STATES.PLAYING) {
+        pauseRun('system');
+      }
+    },
+    onClose: () => {
+      if (appState === GAME_STATES.SYSTEM_PAUSE) {
+        resumeRun('system');
+      }
+    },
+  });
+
+  unbindLifecycle = bindPlatformLifecycle(sdk, {
+    onPause: () => pauseRun('system'),
+    onResume: () => resumeRun('system'),
+  });
+
+  renderSdkStatus(
+    sdk
+      ? `SDK: активен • ${playerProfile.isAuthorized ? `игрок ${playerProfile.name}` : 'гостевой режим'}`
+      : 'SDK: локальный dev-режим (без платформы)'
+  );
+
+  renderMenu();
+
+  if (sdk?.features?.LoadingAPI?.ready) {
+    await sdk.features.LoadingAPI.ready();
+  }
 }
 
 bindStaticHandlers({
-  onStart: startRun,
+  onStart: beginRun,
   onReplay: renderMenu,
+  onPause: () => pauseRun('manual'),
+  onResume: () => resumeRun('manual'),
+  onMenu: renderMenu,
+  onRewardedContinue: tryRewardedContinue,
 });
 
-renderMenu();
+window.addEventListener('beforeunload', () => {
+  stopLoop();
+  unbindLifecycle();
+});
+
+bootstrap();

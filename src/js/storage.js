@@ -1,33 +1,105 @@
-const KEY = 'survive-lesson-save-v1';
+const STORAGE_KEY = 'survive-lesson-save-v2';
+
+export const SAVE_VERSION = 2;
 
 const defaultSave = {
+  version: SAVE_VERSION,
   bestScore: 0,
   bestTestScore: 0,
   unlockedModes: ['normal'],
+  stats: {
+    runs: 0,
+    wins: 0,
+    losses: 0,
+  },
+  settings: {
+    musicMuted: true,
+    sfxMuted: true,
+  },
 };
 
-export function loadSave() {
+function normalizeSave(payload = {}) {
+  const unlockedModes = Array.isArray(payload.unlockedModes) ? payload.unlockedModes : ['normal'];
+  return {
+    version: SAVE_VERSION,
+    bestScore: Number(payload.bestScore) || 0,
+    bestTestScore: Number(payload.bestTestScore) || 0,
+    unlockedModes: [...new Set(['normal', ...unlockedModes])],
+    stats: {
+      runs: Number(payload.stats?.runs) || 0,
+      wins: Number(payload.stats?.wins) || 0,
+      losses: Number(payload.stats?.losses) || 0,
+    },
+    settings: {
+      musicMuted: Boolean(payload.settings?.musicMuted ?? true),
+      sfxMuted: Boolean(payload.settings?.sfxMuted ?? true),
+    },
+  };
+}
+
+function parseRaw(raw) {
+  if (!raw) return { ...defaultSave };
+
   try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return { ...defaultSave };
     const parsed = JSON.parse(raw);
-    return {
-      bestScore: Number(parsed.bestScore) || 0,
-      bestTestScore: Number(parsed.bestTestScore) || 0,
-      unlockedModes: Array.isArray(parsed.unlockedModes)
-        ? [...new Set(['normal', ...parsed.unlockedModes])]
-        : ['normal'],
-    };
+
+    if (typeof parsed !== 'object' || parsed === null) {
+      return { ...defaultSave };
+    }
+
+    if (parsed.version === SAVE_VERSION) {
+      return normalizeSave(parsed);
+    }
+
+    return normalizeSave({
+      ...defaultSave,
+      ...parsed,
+      version: SAVE_VERSION,
+      stats: {
+        ...defaultSave.stats,
+        ...parsed.stats,
+      },
+      settings: {
+        ...defaultSave.settings,
+        ...parsed.settings,
+      },
+    });
   } catch {
     return { ...defaultSave };
   }
 }
 
-export function saveProgress(progress) {
-  const payload = {
-    bestScore: progress.bestScore,
-    bestTestScore: progress.bestTestScore,
-    unlockedModes: progress.unlockedModes,
+export function createLocalStorageService() {
+  return {
+    load() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return parseRaw(raw);
+    },
+    save(nextState) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeSave(nextState)));
+    },
+    merge(localSave, cloudSave) {
+      const local = normalizeSave(localSave);
+      const cloud = normalizeSave(cloudSave);
+
+      return {
+        ...local,
+        bestScore: Math.max(local.bestScore, cloud.bestScore),
+        bestTestScore: Math.max(local.bestTestScore, cloud.bestTestScore),
+        unlockedModes: [...new Set([...local.unlockedModes, ...cloud.unlockedModes])],
+        stats: {
+          runs: Math.max(local.stats.runs, cloud.stats.runs),
+          wins: Math.max(local.stats.wins, cloud.stats.wins),
+          losses: Math.max(local.stats.losses, cloud.stats.losses),
+        },
+        settings: {
+          ...cloud.settings,
+        },
+      };
+    },
   };
-  localStorage.setItem(KEY, JSON.stringify(payload));
+}
+
+export function getDefaultSave() {
+  return { ...defaultSave };
 }
