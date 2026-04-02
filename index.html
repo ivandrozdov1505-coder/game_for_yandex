@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Выживи урок</title>
+    <link rel="stylesheet" href="src/styles/styles.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <section class="screen screen--active" id="start-screen">
+        <h1>Выживи урок</h1>
+        <p class="subtitle">Мемный симулятор выживания школьника на уроке.</p>
+
+        <div class="card">
+          <h2>Режим</h2>
+          <div class="mode-list" id="mode-list"></div>
+        </div>
+
+        <div class="card">
+          <h2>Рекорды</h2>
+          <p>Лучший счёт: <span id="best-score">0</span></p>
+          <p>Лучший результат на контрольной: <span id="best-test-score">0</span></p>
+        </div>
+
+        <button class="btn btn--primary btn--xl" id="start-game-btn">Начать урок</button>
+      </section>
+
+      <section class="screen" id="game-screen">
+        <header class="topbar">
+          <div>
+            <h2 id="mode-title">Обычный урок</h2>
+            <p class="tiny">Время до звонка: <span id="time-left">00:00</span></p>
+          </div>
+          <div class="score-box">Очки: <span id="score">0</span></div>
+        </header>
+
+        <section class="stats" id="stats"></section>
+
+        <section class="event card" id="event-panel">
+          <h3>Ситуация</h3>
+          <p id="event-title">Пока всё спокойно...</p>
+          <p class="tiny" id="event-danger">Опасность: низкая</p>
+        </section>
+
+        <section class="actions card">
+          <h3>Действия</h3>
+          <div class="actions-grid" id="actions-grid"></div>
+        </section>
+
+        <section class="log card">
+          <h3>Лента</h3>
+          <ul id="log-list"></ul>
+        </section>
+      </section>
+
+      <section class="screen" id="result-screen">
+        <h2 id="result-title">Урок окончен</h2>
+        <p id="result-text"></p>
+        <div class="card">
+          <p>Счёт: <span id="result-score">0</span></p>
+          <p>Знания: <span id="result-knowledge">0</span></p>
+          <p>Открытые режимы: <span id="unlocked-modes">1</span></p>
+        </div>
+        <button class="btn btn--primary" id="play-again-btn">Сыграть ещё</button>
+      </section>
+    </div>
+
+    <script type="module" src="src/js/main.js"></script>
+  </body>
+</html>
