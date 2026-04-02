@@ -7,7 +7,7 @@ const D = {
 export const EVENTS = [
   {
     id: 'teacher_look',
-    title: 'Учитель смотрит в твою сторону 👀',
+    title: 'Учитель смотрит в твою сторону.',
     danger: D.medium,
     weight: 1.3,
     minProgress: 0,
@@ -26,7 +26,7 @@ export const EVENTS = [
   },
   {
     id: 'neighbor_help',
-    title: 'Сосед просит помочь с задачей 🤝',
+    title: 'Сосед просит помочь с задачей.',
     danger: D.low,
     weight: 1,
     minProgress: 0.1,
@@ -35,7 +35,7 @@ export const EVENTS = [
   },
   {
     id: 'phone_message',
-    title: 'Пришло сообщение на телефон 📱',
+    title: 'Пришло сообщение на телефон.',
     danger: D.medium,
     weight: 1.2,
     minProgress: 0,
@@ -44,7 +44,7 @@ export const EVENTS = [
   },
   {
     id: 'sleep_attack',
-    title: 'Глаза закрываются... хочется спать 😴',
+    title: 'Глаза закрываются... хочется спать.',
     danger: D.medium,
     weight: 1.2,
     minProgress: 0,

@@ -1,4 +1,4 @@
-export const APP_VERSION = '1.3.0';
+export const APP_VERSION = '1.4.0';
 
 export const STATS = {
   sleepiness: { label: 'Сонливость', type: 'negative', loseAt: 100 },
@@ -13,7 +13,7 @@ export const MODES = {
     id: 'normal',
     title: 'Обычный урок',
     objective: 'Дожить до звонка.',
-    resultWinTitle: 'Звонок! Обычный урок пережит 🎉',
+    resultWinTitle: 'Звонок! Обычный урок пережит',
     resultWinText: 'Ты дожил до конца урока и не спалился.',
     timeLabel: 'До звонка',
     durationSec: 180,
@@ -36,7 +36,7 @@ export const MODES = {
     id: 'test',
     title: 'Контрольная',
     objective: 'Выжить до конца контрольной.',
-    resultWinTitle: 'Контрольная пережита ✅',
+    resultWinTitle: 'Контрольная пережита',
     resultWinText: 'Ты выдержал давление до самого конца.',
     timeLabel: 'До конца контрольной',
     durationSec: 150,
@@ -64,7 +64,7 @@ export const MODES = {
     id: 'endless',
     title: 'Бесконечный режим',
     objective: 'Держись как можно дольше и бей рекорд.',
-    resultWinTitle: 'Рекордный забег завершён 🏁',
+    resultWinTitle: 'Рекордный забег завершён',
     resultWinText: 'Звонка нет — здесь важны только выживание и очки.',
     timeLabel: 'Выжито',
     durationSec: null,
@@ -104,7 +104,7 @@ export const LOSS_REASON = {
   suspicion: 'Учитель раскусил тебя. Конец маскировки.',
   sleepiness: 'Ты уснул прямо на уроке. Поражение.',
   stress: 'Нервы не выдержали, и ты сдался.',
-  eventFail: 'Ты провалил ключевое событие.',
+  eventFail: 'Ты провалил важное событие.',
 };
 
 export const RUN_END_TYPE = {

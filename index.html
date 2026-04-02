@@ -8,16 +8,143 @@
     <script src="https://yandex.ru/games/sdk/v2"></script>
   </head>
   <body>
+    <svg class="sprite-sheet" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="i-score" viewBox="0 0 24 24">
+        <path d="M12 2.8 14.5 8l5.7.8-4.1 4 .9 5.7L12 15.9 6.9 18.5l.9-5.7-4.1-4 5.7-.8L12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-sleepiness" viewBox="0 0 24 24">
+        <path d="M14.7 3.4a8.3 8.3 0 1 0 5.9 12.9A7.1 7.1 0 1 1 14.7 3.4Z" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="M6.4 5.8h2.2M7.5 4.7V7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-stress" viewBox="0 0 24 24">
+        <path d="M13.7 2.8 6.2 13.4h4.4L9.9 21.2l7.9-10.8h-4.4l.3-7.6Z" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-suspicion" viewBox="0 0 24 24">
+        <path d="M2.8 12s3.4-5.7 9.2-5.7 9.2 5.7 9.2 5.7-3.4 5.7-9.2 5.7S2.8 12 2.8 12Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <circle cx="12" cy="12" r="2.8" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.7" />
+      </symbol>
+      <symbol id="i-knowledge" viewBox="0 0 24 24">
+        <path d="M9.2 18.2h5.6M10 21.1h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        <path d="M12 3.4a6.3 6.3 0 0 0-3.9 11.2c.7.6 1.1 1.3 1.3 2.1h5.2c.2-.8.6-1.5 1.3-2.1A6.3 6.3 0 0 0 12 3.4Z" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-listen" viewBox="0 0 24 24">
+        <path d="M14.8 16.8c0 2-1.4 3.6-3.1 3.6S8.6 19 8.6 17v-4.2a4.4 4.4 0 0 1 8.8 0v1.4a2.5 2.5 0 0 1-2.5 2.6h-2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-pretend" viewBox="0 0 24 24">
+        <rect x="5" y="3.8" width="14" height="16.4" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <path d="M8.3 8.1h7.4M8.3 11.8h7.4M8.3 15.5h4.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24">
+        <rect x="7.2" y="2.8" width="9.6" height="18.4" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <path d="M10.3 6h3.4M11.4 17.8h1.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-cheat" viewBox="0 0 24 24">
+        <path d="M8.2 4.8H17a2 2 0 0 1 2 2v10.4a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V6.8a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <path d="M5 8V6.4A1.6 1.6 0 0 1 6.6 4.8H8M9.1 9.3h6.8M9.1 12.6h4.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-answer" viewBox="0 0 24 24">
+        <path d="M5.1 5.2h13.8a2.3 2.3 0 0 1 2.3 2.3v7.2a2.3 2.3 0 0 1-2.3 2.3H11l-4.6 3.6v-3.6H5.1a2.3 2.3 0 0 1-2.3-2.3V7.5a2.3 2.3 0 0 1 2.3-2.3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-ignore" viewBox="0 0 24 24">
+        <path d="M3 3 21 21" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        <path d="M10.7 6.5A9.7 9.7 0 0 1 12 6.3c5.8 0 9.2 5.7 9.2 5.7a16.6 16.6 0 0 1-3 3.6M8.1 8.1C5 9.4 2.8 12 2.8 12s3.4 5.7 9.2 5.7c1.2 0 2.3-.2 3.2-.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M9.5 9.5A3.2 3.2 0 0 0 12 15.2c.8 0 1.5-.3 2-.7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-excuse" viewBox="0 0 24 24">
+        <path d="M12 3.3 18.5 6v5.7c0 4.2-2.6 7.3-6.5 9-3.9-1.7-6.5-4.8-6.5-9V6L12 3.3Z" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="M9.2 11.8h5.6M9.8 9h4.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-leave" viewBox="0 0 24 24">
+        <path d="M6.1 3.8h8.8a2 2 0 0 1 2 2v12.4a2 2 0 0 1-2 2H6.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="M13 12H3.8M7.3 8.5 3.8 12l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-teacher-look" viewBox="0 0 24 24">
+        <path d="M2.8 12s3.4-5.7 9.2-5.7 9.2 5.7 9.2 5.7-3.4 5.7-9.2 5.7S2.8 12 2.8 12Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <circle cx="12" cy="12" r="2.3" fill="currentColor" />
+      </symbol>
+      <symbol id="i-called-to-answer" viewBox="0 0 24 24">
+        <path d="M5.1 5.2h13.8a2.3 2.3 0 0 1 2.3 2.3v7.2a2.3 2.3 0 0 1-2.3 2.3H11l-4.6 3.6v-3.6H5.1a2.3 2.3 0 0 1-2.3-2.3V7.5a2.3 2.3 0 0 1 2.3-2.3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="M10.3 10.3a1.9 1.9 0 1 1 3.5 1c-.7.8-1.4 1.2-1.4 2.1M12.4 15.8h.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-neighbor-help" viewBox="0 0 24 24">
+        <path d="M7.6 10.5 10 8.2a2 2 0 0 1 2.8 0l1.7 1.7a2 2 0 0 1 0 2.8l-2.8 2.8a2 2 0 0 1-2.8 0L7.6 14a2.5 2.5 0 0 1 0-3.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="m13.2 9.8 1.1-1.1a2 2 0 0 1 2.8 0l2 2a2 2 0 0 1 0 2.8l-2.7 2.7a2 2 0 0 1-2.8 0l-1.1-1.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-phone-message" viewBox="0 0 24 24">
+        <rect x="4.6" y="2.8" width="8.5" height="18.4" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <path d="M7.3 6h3M8.2 17.8h1.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        <path d="M15.4 7h5.2a1.4 1.4 0 0 1 1.4 1.4v5.1a1.4 1.4 0 0 1-1.4 1.4H18l-2.6 2v-2h0a1.4 1.4 0 0 1-1.4-1.4V8.4A1.4 1.4 0 0 1 15.4 7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-sleep-attack" viewBox="0 0 24 24">
+        <path d="M5 7.4h6.6L5.8 15H12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M13 5.2h5.5L13.8 11H19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M14.5 17.3A6 6 0 0 0 20.2 10a5.6 5.6 0 0 1-5.7 9.2Z" fill="currentColor" fill-opacity=".18" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-notebook-check" viewBox="0 0 24 24">
+        <path d="M6 4.2h6.5a2.4 2.4 0 0 1 2.4 2.4v13.2H8.4A2.4 2.4 0 0 1 6 17.4V4.2Zm8.9 2.4a2.4 2.4 0 0 1 2.4-2.4H18v13.2a2.4 2.4 0 0 1-2.4 2.4h-.7V6.6Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-mini-test" viewBox="0 0 24 24">
+        <path d="M8.2 4h7.6a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8.2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <path d="M9.5 8h5M9.5 11.5h5M9.5 15h3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        <path d="m15.1 15.5 1.2 1.2 2.3-2.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-board-call" viewBox="0 0 24 24">
+        <rect x="3.2" y="4.2" width="17.6" height="11.4" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <path d="M8.2 19.8h7.6M12 15.6v4.2M7.2 8.4h9.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24">
+        <path d="M12 3.3 21 19H3L12 3.3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="M12 9v4.5M12 16.9h.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-result-win" viewBox="0 0 24 24">
+        <path d="M7.6 4.4h8.8v3.8a4.4 4.4 0 0 1-8.8 0V4.4Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="M7.6 6.4H4.8v.8a3.2 3.2 0 0 0 3.2 3.2h.4M16.4 6.4h2.8v.8a3.2 3.2 0 0 1-3.2 3.2h-.4M12 12.7v3.1M9 20.2h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-result-lose" viewBox="0 0 24 24">
+        <path d="M8 3.4h8l4.6 4.6v8L16 20.6H8L3.4 16V8L8 3.4Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" />
+        <path d="M9.2 9.2 14.8 14.8M14.8 9.2 9.2 14.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-result-record" viewBox="0 0 24 24">
+        <path d="M6 3.4v17.2M6 4.4h10.4l-1.8 3.5 1.8 3.5H6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="i-event-fail" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.7" />
+        <path d="M9.2 9.2 14.8 14.8M14.8 9.2 9.2 14.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+      </symbol>
+      <symbol id="i-result-combo" viewBox="0 0 24 24">
+        <path d="M5.2 6.2h13.6M5.2 12h13.6M5.2 17.8h9.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+        <circle cx="18.5" cy="17.8" r="2.1" fill="none" stroke="currentColor" stroke-width="1.7" />
+      </symbol>
+      <symbol id="avatar-teacher" viewBox="0 0 24 24">
+        <circle cx="12" cy="7.2" r="3.4" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.4" />
+        <path d="M7.1 20c0-3 2.2-5.5 4.9-5.5s4.9 2.5 4.9 5.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <path d="M17.8 9.4 20 11.8M16.8 12.2l3-2.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+      </symbol>
+      <symbol id="avatar-student" viewBox="0 0 24 24">
+        <circle cx="12" cy="7.4" r="3.3" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.4" />
+        <path d="M7.2 19.9c.4-3.1 2.5-5.3 4.8-5.3 2.4 0 4.4 2.2 4.8 5.3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <path d="m8.2 12.1 3.8 2.1 3.8-2.1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+      </symbol>
+      <symbol id="avatar-classmate" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="3" fill="currentColor" fill-opacity=".2" stroke="currentColor" stroke-width="1.4" />
+        <path d="M8.2 19.7c.4-2.8 2-4.8 3.8-4.8s3.4 2 3.8 4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+      </symbol>
+    </svg>
+
     <div class="app" id="app">
       <section class="screen screen--active" id="start-screen">
         <header class="hero card">
-          <p class="hero__badge">Yandex Games • casual survival</p>
+          <p class="hero__badge">Yandex Games • classroom survival</p>
           <h1>Выживи урок</h1>
           <p class="subtitle">Не спались учителю, переживи звонок и набери максимум очков.</p>
           <div class="hero__art" aria-hidden="true">
-            <div class="hero__teacher">👩‍🏫</div>
-            <div class="hero__student">🧑‍🎓</div>
-            <div class="hero__board">Доска: «Контрольная?»</div>
+            <div class="hero__teacher">
+              <svg class="ui-icon ui-icon--hero" viewBox="0 0 24 24"><use href="#avatar-teacher"></use></svg>
+            </div>
+            <div class="hero__student">
+              <svg class="ui-icon ui-icon--hero" viewBox="0 0 24 24"><use href="#avatar-student"></use></svg>
+            </div>
+            <div class="hero__board">На доске: «Контрольная?»</div>
           </div>
           <p class="tiny" id="sdk-status">SDK: инициализация...</p>
         </header>
@@ -34,8 +161,11 @@
           <p>Победы: <span id="total-wins">0</span> / Забеги: <span id="total-runs">0</span></p>
         </div>
 
-        <button class="btn btn--primary btn--xl" id="start-game-btn">Начать урок</button>
-        <p class="tiny app-version" id="app-version">v1.3.0</p>
+        <div class="menu-actions">
+          <button class="btn btn--primary btn--xl" id="start-game-btn">Начать урок</button>
+          <button class="btn btn--ghost" id="tutorial-btn">Обучение</button>
+        </div>
+        <p class="tiny app-version" id="app-version">Версия 1.4.0</p>
       </section>
 
       <section class="screen" id="game-screen">
@@ -45,7 +175,10 @@
             <p class="tiny"><span id="time-label">До звонка</span>: <span id="time-left">00:00</span></p>
           </div>
           <div class="row">
-            <div class="score-box">⭐ Очки: <span id="score">0</span></div>
+            <div class="score-box">
+              <svg class="ui-icon ui-icon--sm" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-score"></use></svg>
+              <span>Очки: <span id="score">0</span></span>
+            </div>
             <button class="btn" id="pause-btn">Пауза</button>
           </div>
         </header>
@@ -61,17 +194,25 @@
           </div>
           <div class="scene__layer scene__layer--characters">
             <div class="teacher" id="teacher-state">
-              <div class="teacher__emoji" id="teacher-emoji">👩‍🏫</div>
+              <div class="character-figure character-figure--teacher">
+                <svg class="ui-icon ui-icon--avatar" viewBox="0 0 24 24" aria-hidden="true"><use href="#avatar-teacher"></use></svg>
+              </div>
               <span class="character-label" id="teacher-label">Нейтрально</span>
             </div>
             <div class="student" id="student-state">
-              <div class="student__emoji" id="student-emoji">🧑‍🎓</div>
-              <span class="character-label" id="student-label">Спокойно</span>
+              <div class="character-figure character-figure--student">
+                <svg class="ui-icon ui-icon--avatar" viewBox="0 0 24 24" aria-hidden="true"><use href="#avatar-student"></use></svg>
+              </div>
+              <span class="character-label" id="student-label">Держится</span>
             </div>
-            <div class="classmates" aria-hidden="true">🧑 🧒 🧑</div>
+            <div class="classmates" aria-hidden="true">
+              <svg class="ui-icon ui-icon--classmate" viewBox="0 0 24 24"><use href="#avatar-classmate"></use></svg>
+              <svg class="ui-icon ui-icon--classmate" viewBox="0 0 24 24"><use href="#avatar-classmate"></use></svg>
+              <svg class="ui-icon ui-icon--classmate" viewBox="0 0 24 24"><use href="#avatar-classmate"></use></svg>
+            </div>
           </div>
           <div class="event-bubble" id="event-visual" hidden>
-            <span id="event-icon">⚠️</span>
+            <span class="event-bubble__icon" id="event-icon"></span>
             <strong id="event-short">Событие</strong>
           </div>
           <div class="effect-layer" id="effect-layer"></div>
@@ -96,10 +237,24 @@
 
       <section class="screen" id="result-screen">
         <div class="result card" id="result-card">
-          <div class="result__mood" id="result-mood">😵</div>
+          <div class="result__icon" id="result-icon"></div>
           <h2 id="result-title">Урок окончен</h2>
           <p id="result-text"></p>
           <p class="tiny" id="result-recap">Сегодня было жарко.</p>
+
+          <section class="result__reason" id="result-reason" hidden>
+            <p class="result__reason-label">Причина поражения</p>
+            <div class="result__reason-head">
+              <div class="result__reason-icon" id="result-reason-icon"></div>
+              <div>
+                <h3 id="result-reason-title">Ключевой фактор</h3>
+                <p class="tiny" id="result-reason-text"></p>
+              </div>
+            </div>
+            <p class="result__reason-metric" id="result-reason-metric"></p>
+            <ul class="result__secondary" id="result-secondary-list"></ul>
+          </section>
+
           <div class="result__stats">
             <p>Счёт: <span id="result-score">0</span></p>
             <p>Знания: <span id="result-knowledge">0</span></p>
@@ -113,11 +268,26 @@
       </section>
 
       <section class="screen" id="pause-screen">
-        <h2 id="pause-title">Пауза</h2>
-        <p id="pause-text">Игра остановлена.</p>
+        <div class="card">
+          <h2 id="pause-title">Пауза</h2>
+          <p id="pause-text">Игра остановлена.</p>
+        </div>
         <div class="actions-grid actions-grid--result">
           <button class="btn btn--primary" id="resume-btn">Продолжить</button>
           <button class="btn" id="menu-btn">В меню</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="tutorial-overlay" id="tutorial-overlay" hidden>
+      <div class="tutorial-overlay__backdrop"></div>
+      <section class="tutorial-card card" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+        <p class="tutorial-card__progress" id="tutorial-progress">Шаг 1/5</p>
+        <h2 id="tutorial-title">Обучение</h2>
+        <p class="tutorial-card__text" id="tutorial-text"></p>
+        <div class="tutorial-card__actions">
+          <button class="btn btn--ghost" id="tutorial-skip-btn">Пропустить</button>
+          <button class="btn btn--primary" id="tutorial-next-btn">Далее</button>
         </div>
       </section>
     </div>

@@ -10,14 +10,18 @@ import { syncGameplayApi } from './sdk/gameplay.js';
 import { initSdk } from './sdk/init.js';
 import { getPlayerProfile } from './sdk/player.js';
 import { createStorageBridge } from './sdk/storage-bridge.js';
+import { getTutorialStep, TUTORIAL_STEPS } from './tutorial.js';
 import {
   bindStaticHandlers,
+  hideTutorial,
   renderActions,
   renderGame,
   renderPause,
   renderResult,
   renderSdkStatus,
   renderStart,
+  renderTutorial,
+  resetUiRuntime,
   switchScreen,
 } from './ui.js';
 
@@ -36,6 +40,14 @@ let playerProfile = { isAuthorized: false, name: 'Гость', player: null };
 let storageBridge = createStorageBridge({ localStorageService: storageService, ysdk: null, playerProfile });
 let adsService = createAdsService(null);
 
+const tutorialSession = {
+  active: false,
+  source: null,
+  stepIndex: 0,
+  preview: false,
+  pendingAutoContinuation: false,
+};
+
 function setAppState(nextState) {
   if (appState === nextState) return;
   appState = nextState;
@@ -43,7 +55,20 @@ function setAppState(nextState) {
 }
 
 function persistSave() {
-  storageBridge.save(save);
+  void storageBridge.save(save);
+}
+
+function markTutorialShown() {
+  if (save.tutorialShown) return;
+  save.tutorialShown = true;
+  persistSave();
+}
+
+function clearTutorialSession() {
+  tutorialSession.active = false;
+  tutorialSession.source = null;
+  tutorialSession.stepIndex = 0;
+  tutorialSession.preview = false;
 }
 
 function unlockModes() {
@@ -53,6 +78,12 @@ function unlockModes() {
       runState.log.unshift(`Открыт режим: ${mode.title}`);
     }
   });
+}
+
+function stopLoop() {
+  if (!timer) return;
+  clearInterval(timer);
+  timer = null;
 }
 
 function startLoop() {
@@ -67,24 +98,138 @@ function startLoop() {
   }, mode.tickMs);
 }
 
-function stopLoop() {
-  if (!timer) return;
-  clearInterval(timer);
-  timer = null;
+function prepareRun(modeId) {
+  stopLoop();
+  resetUiRuntime();
+  runState = createInitialState(modeId);
+  renderActions(handleAction);
+  renderGame(runState);
+  switchScreen('game');
 }
 
-function beginRun() {
-  runState = createInitialState(selectedMode);
+function startLiveRun() {
   runState.running = true;
   save.stats.runs += 1;
   persistSave();
-
-  switchScreen('game');
-  renderActions(handleAction);
-  renderGame(runState);
-
   setAppState(GAME_STATES.PLAYING);
   startLoop();
+}
+
+function tutorialNextLabel() {
+  const isLast = tutorialSession.stepIndex >= TUTORIAL_STEPS.length - 1;
+  if (isLast) {
+    return tutorialSession.source === 'manual' ? 'Вернуться в меню' : 'Играть';
+  }
+
+  if (tutorialSession.stepIndex === 0 && tutorialSession.source === 'manual') {
+    return 'Показать интерфейс';
+  }
+
+  return 'Далее';
+}
+
+function showCurrentTutorialStep() {
+  const step = getTutorialStep(tutorialSession.stepIndex);
+  if (!step) return;
+
+  tutorialSession.active = true;
+  setAppState(GAME_STATES.TUTORIAL);
+  renderTutorial(step, {
+    stepIndex: tutorialSession.stepIndex,
+    nextLabel: tutorialNextLabel(),
+  });
+}
+
+function openMenuTutorial(source) {
+  stopLoop();
+  tutorialSession.source = source;
+  tutorialSession.preview = false;
+  tutorialSession.stepIndex = 0;
+  switchScreen('start');
+  showCurrentTutorialStep();
+}
+
+function openRunTutorial({ source, preview }) {
+  tutorialSession.source = source;
+  tutorialSession.preview = preview;
+  tutorialSession.stepIndex = 1;
+  showCurrentTutorialStep();
+}
+
+function beginTutorialPreviewRun() {
+  prepareRun('normal');
+  openRunTutorial({ source: 'manual', preview: true });
+}
+
+function completeTutorial() {
+  const shouldStartLiveRun = tutorialSession.source === 'auto' && !tutorialSession.preview && tutorialSession.stepIndex > 0;
+
+  hideTutorial();
+  markTutorialShown();
+  tutorialSession.pendingAutoContinuation = false;
+  clearTutorialSession();
+
+  if (shouldStartLiveRun) {
+    startLiveRun();
+    return;
+  }
+
+  renderMenu();
+}
+
+function skipTutorial() {
+  const shouldStartLiveRun = tutorialSession.source === 'auto' && !tutorialSession.preview && tutorialSession.stepIndex > 0;
+
+  hideTutorial();
+  markTutorialShown();
+  tutorialSession.pendingAutoContinuation = false;
+  clearTutorialSession();
+
+  if (shouldStartLiveRun) {
+    startLiveRun();
+    return;
+  }
+
+  renderMenu();
+}
+
+function handleTutorialNext() {
+  if (!tutorialSession.active) return;
+
+  if (tutorialSession.stepIndex === 0) {
+    hideTutorial();
+
+    if (tutorialSession.source === 'auto') {
+      tutorialSession.active = false;
+      tutorialSession.stepIndex = 1;
+      tutorialSession.pendingAutoContinuation = true;
+      renderMenu();
+      return;
+    }
+
+    beginTutorialPreviewRun();
+    return;
+  }
+
+  if (tutorialSession.stepIndex >= TUTORIAL_STEPS.length - 1) {
+    completeTutorial();
+    return;
+  }
+
+  tutorialSession.stepIndex += 1;
+  showCurrentTutorialStep();
+}
+
+function beginRun() {
+  prepareRun(selectedMode);
+
+  if (tutorialSession.pendingAutoContinuation && !save.tutorialShown) {
+    tutorialSession.pendingAutoContinuation = false;
+    openRunTutorial({ source: 'auto', preview: false });
+    return;
+  }
+
+  startLiveRun();
 }
 
 async function finishRun() {
@@ -128,6 +273,8 @@ function handleAction(actionId) {
 }
 
 function renderMenu() {
+  resetUiRuntime();
+
   if (!save.unlockedModes.includes(selectedMode)) {
     selectedMode = 'normal';
   }
@@ -243,6 +390,10 @@ async function bootstrap() {
 
   renderMenu();
 
+  if (!save.tutorialShown) {
+    openMenuTutorial('auto');
+  }
+
   if (sdk?.features?.LoadingAPI?.ready) {
     await sdk.features.LoadingAPI.ready();
   }
@@ -250,6 +401,9 @@ async function bootstrap() {
 
 bindStaticHandlers({
   onStart: beginRun,
+  onTutorialOpen: () => openMenuTutorial('manual'),
+  onTutorialNext: handleTutorialNext,
+  onTutorialSkip: skipTutorial,
   onReplay: renderMenu,
   onPause: () => pauseRun('manual'),
   onResume: () => resumeRun('manual'),

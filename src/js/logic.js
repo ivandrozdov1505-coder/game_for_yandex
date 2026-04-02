@@ -260,6 +260,8 @@ export function performAction(state, actionId) {
     state.endType = mode.durationSec ? RUN_END_TYPE.LOSE : RUN_END_TYPE.ENDLESS_RECORD;
     state.win = false;
     state.endReason = LOSS_REASON.eventFail;
+    state.failedEventId = state.activeEvent?.id ?? null;
+    state.failedEventTitle = state.activeEvent?.title ?? '';
   }
 
   pushLog(state, `${ACTIONS.find((a) => a.id === actionId).label}: ${delta.msg}`);
@@ -292,6 +294,8 @@ export function applySecondChance(state) {
   state.endReason = '';
   state.continueUsed = true;
   state.activeEvent = null;
+  state.failedEventId = null;
+  state.failedEventTitle = '';
   state.stats.sleepiness = Math.min(state.stats.sleepiness, 70);
   state.stats.stress = Math.min(state.stats.stress, 70);
   state.stats.suspicion = Math.min(state.stats.suspicion, 70);

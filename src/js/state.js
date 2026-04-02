@@ -21,6 +21,8 @@ export function createInitialState(modeId = 'normal') {
     elapsedSec: 0,
     stats: initialStats(),
     activeEvent: null,
+    failedEventId: null,
+    failedEventTitle: '',
     eventHistory: [],
     log: [`${mode.title}: ${mode.objective}`],
     nextEventInSec: 5,

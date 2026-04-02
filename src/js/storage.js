@@ -1,11 +1,12 @@
 const STORAGE_KEY = 'survive-lesson-save-v2';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 const defaultSave = {
   version: SAVE_VERSION,
   bestScore: 0,
   bestTestScore: 0,
+  tutorialShown: false,
   unlockedModes: ['normal'],
   stats: {
     runs: 0,
@@ -24,6 +25,7 @@ function normalizeSave(payload = {}) {
     version: SAVE_VERSION,
     bestScore: Number(payload.bestScore) || 0,
     bestTestScore: Number(payload.bestTestScore) || 0,
+    tutorialShown: payload.tutorialShown === true,
     unlockedModes: [...new Set(['normal', ...unlockedModes])],
     stats: {
       runs: Number(payload.stats?.runs) || 0,
@@ -86,6 +88,7 @@ export function createLocalStorageService() {
         ...local,
         bestScore: Math.max(local.bestScore, cloud.bestScore),
         bestTestScore: Math.max(local.bestTestScore, cloud.bestTestScore),
+        tutorialShown: local.tutorialShown || cloud.tutorialShown,
         unlockedModes: [...new Set([...local.unlockedModes, ...cloud.unlockedModes])],
         stats: {
           runs: Math.max(local.stats.runs, cloud.stats.runs),
